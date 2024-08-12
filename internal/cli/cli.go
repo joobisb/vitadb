@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -37,7 +38,11 @@ func (c *CLI) Run() {
 				fmt.Println("Usage: set <key> <value>")
 				continue
 			}
-			c.store.Set(parts[1], parts[2])
+			err := c.store.Set(parts[1], parts[2])
+			if err != nil {
+				log.Printf("error setting key %v", err)
+				continue
+			}
 			fmt.Println("OK")
 		case "get":
 			if len(parts) != 2 {
@@ -49,6 +54,16 @@ func (c *CLI) Run() {
 				fmt.Println("Key not found")
 			} else {
 				fmt.Println(value)
+			}
+		case "del":
+			if len(parts) != 2 {
+				fmt.Println("Usage: delete <key>")
+				continue
+			}
+			if err := c.store.Delete(parts[1]); err != nil {
+				fmt.Printf("Error: %v\n", err)
+			} else {
+				fmt.Println("OK")
 			}
 		case "exit":
 			return
