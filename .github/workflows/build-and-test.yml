@@ -1,0 +1,44 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v5
+      with:
+        go-version: ^1.22
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v4
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: v1.59
+
+    - name: Check gofmt
+      run: |
+        gofmt_files=$(gofmt -l .)
+        if [ -n "$gofmt_files" ]; then
+          echo "Go files must be formatted with gofmt. Please run:"
+          echo "  gofmt -w ."
+          echo "Files with issues:"
+          echo "$gofmt_files"
+          exit 1
+        fi
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
