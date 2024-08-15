@@ -1,0 +1,3 @@
+max_log_size: 104857600  # 100 MB
+do_async_repair: false
+wal_dir: "/tmp/vitadb"

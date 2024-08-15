@@ -3,6 +3,7 @@ package wal
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,11 +11,11 @@ import (
 )
 
 func TestWAL(t *testing.T) {
-	tempFile, err := os.CreateTemp("", "wal_test")
-	require.NoError(t, err, "Failed to create temp file")
-	defer os.Remove(tempFile.Name())
+	tempDir, err := os.MkdirTemp("", "wal_test")
+	require.NoError(t, err, "Failed to create temp directory")
+	defer os.RemoveAll(tempDir) // Clean up the directory after the test
 
-	wal, err := NewWAL(tempFile.Name())
+	wal, err := NewWAL(tempDir)
 	require.NoError(t, err, "Failed to create WAL")
 
 	t.Run("AppendSet", func(t *testing.T) {
@@ -30,8 +31,8 @@ func TestWAL(t *testing.T) {
 	err = wal.Close()
 	assert.NoError(t, err, "Failed to close WAL")
 
-	// Verify the contents of the WAL
-	content, err := os.ReadFile(tempFile.Name())
+	walFilePath := filepath.Join(tempDir, walName)
+	content, err := os.ReadFile(walFilePath)
 	require.NoError(t, err, "Failed to read WAL file")
 
 	lines := splitLines(content)

@@ -12,6 +12,8 @@ type OperationType string
 const (
 	OperationSet OperationType = "SET"
 	OperationDel OperationType = "DEL"
+
+	walName string = "kvstore.wal"
 )
 
 type LogEntry struct {
@@ -21,17 +23,26 @@ type LogEntry struct {
 }
 
 type WAL struct {
-	file *os.File
-	mu   sync.Mutex
+	filePath string
+	file     *os.File
+	mu       sync.Mutex
 }
 
-func NewWAL(filename string) (*WAL, error) {
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func NewWAL(walDir string) (*WAL, error) {
+	walFilePath := walDir + "/" + walName
+	file, err := os.OpenFile(walFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open WAL file: %v", err)
 	}
 
-	return &WAL{file: file}, nil
+	return &WAL{
+		file:     file,
+		filePath: walFilePath,
+	}, nil
+}
+
+func (w *WAL) GetWALFilePath() string {
+	return w.filePath
 }
 
 func (w *WAL) AppendSet(key, value string) error {
