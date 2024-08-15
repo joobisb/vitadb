@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/joobisb/patterns/wal/internal/config"
 	"github.com/joobisb/patterns/wal/internal/wal"
 )
 
@@ -17,9 +18,8 @@ type KVStore struct {
 	wal  *wal.WAL
 }
 
-// TODO make walFile part of a config and pass the config
-func NewKVStore(walFile string) (*KVStore, error) {
-	w, err := wal.NewWAL(walFile)
+func NewKVStore(cfg *config.Config) (*KVStore, error) {
+	w, err := wal.NewWAL(cfg.WALDir)
 	if err != nil {
 		return nil, err
 	}
@@ -65,11 +65,12 @@ func (s *KVStore) Close() error {
 	return s.wal.Close()
 }
 
-func (s *KVStore) RecoverFromWAL(filename string) error {
-	file, err := os.Open(filename)
+func (s *KVStore) RecoverFromWAL() error {
+	file, err := os.Open(s.wal.GetWALFilePath())
 	if err != nil {
 		return fmt.Errorf("failed to open WAL file: %v", err)
 	}
+
 	defer func() {
 		err := file.Close()
 		if err != nil {

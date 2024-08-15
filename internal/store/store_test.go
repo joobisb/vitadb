@@ -4,16 +4,21 @@ import (
 	"os"
 	"testing"
 
+	"github.com/joobisb/patterns/wal/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestKVStore(t *testing.T) {
-	tempFile, err := os.CreateTemp("", "kvstore_test")
-	require.NoError(t, err, "Failed to create temp file")
-	defer os.Remove(tempFile.Name())
+	tempDir, err := os.MkdirTemp("", "kvstore_test")
+	require.NoError(t, err, "Failed to create temp directory")
+	defer os.RemoveAll(tempDir)
 
-	store, err := NewKVStore(tempFile.Name())
+	cfg := &config.Config{
+		WALDir: tempDir,
+	}
+
+	store, err := NewKVStore(cfg)
 	require.NoError(t, err, "Failed to create KVStore")
 
 	t.Run("Set and Get", func(t *testing.T) {
@@ -40,10 +45,10 @@ func TestKVStore(t *testing.T) {
 		err = store.Close()
 		assert.NoError(t, err, "Failed to close store")
 
-		newStore, err := NewKVStore(tempFile.Name())
+		newStore, err := NewKVStore(cfg)
 		require.NoError(t, err, "Failed to create new KVStore")
 
-		err = newStore.RecoverFromWAL(tempFile.Name())
+		err = newStore.RecoverFromWAL()
 		assert.NoError(t, err, "Failed to recover from WAL")
 
 		value, ok := newStore.Get("key1")

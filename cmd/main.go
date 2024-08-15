@@ -4,12 +4,18 @@ import (
 	"log"
 
 	"github.com/joobisb/patterns/wal/internal/cli"
+	"github.com/joobisb/patterns/wal/internal/config"
 	"github.com/joobisb/patterns/wal/internal/store"
 )
 
 func main() {
-	walFile := "kvstore.wal"
-	kvStore, err := store.NewKVStore(walFile)
+
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+
+	kvStore, err := store.NewKVStore(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create KVStore: %v", err)
 	}
@@ -21,7 +27,7 @@ func main() {
 		}
 	}()
 
-	if err := kvStore.RecoverFromWAL(walFile); err != nil {
+	if err := kvStore.RecoverFromWAL(); err != nil {
 		log.Printf("Failed to recover from WAL: %v", err)
 	}
 
