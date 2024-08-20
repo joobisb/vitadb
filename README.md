@@ -39,13 +39,18 @@ go build ./...
 ```
 
 4. **Run VitaDB**
+To start the VitaDB server:
+```bash
+go run cmd/server/main.go
+```
+Use `vitadb-cli` to connect to server:
+```bash
+go run cmd/client/main.go
+```
 If you have Make installed:
 ```bash
 make run
-```
-Otherwise, use Go directly:
-```bash
-go run cmd/main.go
+make cli
 ```
 
 5. **Using the CLI**

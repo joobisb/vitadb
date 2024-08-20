@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/joobisb/patterns/wal/internal/store"
+	"github.com/joobisb/vitadb/internal/store"
 )
 
 type CLI struct {

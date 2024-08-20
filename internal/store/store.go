@@ -8,8 +8,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/joobisb/patterns/wal/internal/config"
-	"github.com/joobisb/patterns/wal/internal/wal"
+	"github.com/joobisb/vitadb/internal/config"
+	"github.com/joobisb/vitadb/internal/wal"
 )
 
 type KVStore struct {

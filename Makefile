@@ -16,6 +16,9 @@ build:
 	go build ./...
 
 run:
-	go run cmd/main.go
+	go run cmd/server/main.go
+
+cli:
+	go run cmd/client/main.go
 
 check: fmt lint test vet security

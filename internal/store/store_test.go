@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/joobisb/patterns/wal/internal/config"
+	"github.com/joobisb/vitadb/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

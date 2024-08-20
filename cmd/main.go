@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/joobisb/patterns/wal/internal/cli"
-	"github.com/joobisb/patterns/wal/internal/config"
-	"github.com/joobisb/patterns/wal/internal/store"
+	"github.com/joobisb/vitadb/internal/cli"
+	"github.com/joobisb/vitadb/internal/config"
+	"github.com/joobisb/vitadb/internal/store"
 )
 
 func main() {
