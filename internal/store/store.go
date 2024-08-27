@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -19,7 +18,7 @@ type KVStore struct {
 }
 
 func NewKVStore(cfg *config.Config) (*KVStore, error) {
-	w, err := wal.NewWAL(cfg.WALDir)
+	w, err := wal.NewWAL(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -66,18 +65,23 @@ func (s *KVStore) Close() error {
 }
 
 func (s *KVStore) RecoverFromWAL() error {
-	file, err := os.Open(s.wal.GetWALFilePath())
-	if err != nil {
-		return fmt.Errorf("failed to open WAL file: %v", err)
+	paths := s.wal.GetAllSegmentPaths()
+
+	for _, path := range paths {
+		if err := s.recoverFromFile(path); err != nil {
+			return err
+		}
 	}
 
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			log.Printf("error closing file %v", err)
-			return
-		}
-	}()
+	return nil
+}
+
+func (s *KVStore) recoverFromFile(filePath string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open WAL file %s: %v", filePath, err)
+	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -95,7 +99,7 @@ func (s *KVStore) RecoverFromWAL() error {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error reading WAL file: %v", err)
+		return fmt.Errorf("error reading WAL file %s: %v", filePath, err)
 	}
 
 	return nil

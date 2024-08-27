@@ -5,9 +5,11 @@ import (
 )
 
 type Config struct {
-	MaxLogSize    int64  `mapstructure:"max_log_size"`
-	DoAsyncRepair bool   `mapstructure:"do_async_repair"`
-	WALDir        string `mapstructure:"wal_dir"`
+	MaxLogSize       int64  `mapstructure:"max_log_size"`
+	DoAsyncRepair    bool   `mapstructure:"do_async_repair"`
+	WALDir           string `mapstructure:"wal_dir"`
+	UseSegmentedLogs bool   `mapstructure:"use_segmented_logs"`
+	SegmentSize      int    `mapstructure:"segment_size"`
 }
 
 func Load() (*Config, error) {
@@ -22,6 +24,7 @@ func Load() (*Config, error) {
 	viper.SetDefault("max_log_size", 104857600)
 	viper.SetDefault("do_async_repair", false)
 	viper.SetDefault("wal_dir", "/tmp/vitadb")
+	viper.SetDefault("segment_size", 1000)
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
