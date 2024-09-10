@@ -16,8 +16,6 @@ type OperationType string
 const (
 	OperationSet OperationType = "SET"
 	OperationDel OperationType = "DEL"
-
-	walName string = "kvstore.wal"
 )
 
 type LogEntry struct {

@@ -123,7 +123,7 @@ func (sl *SegmentedLog) calculateNextOffset(segment *LogSegment) (int64, error) 
 func (sl *SegmentedLog) createNewSegment(baseOffset int64) error {
 	segment := &LogSegment{
 		baseOffset: baseOffset,
-		nextOffset: baseOffset + 1,
+		nextOffset: baseOffset,
 	}
 
 	segmentFile, err := os.OpenFile(filepath.Join(sl.dir, fmt.Sprintf("%s%d%s", logFilePrefix, baseOffset, logFileExt)), os.O_CREATE|os.O_RDWR, 0644)
@@ -164,19 +164,42 @@ func (sl *SegmentedLog) Read(offset int64) ([]byte, error) {
 	sl.mu.RLock()
 	defer sl.mu.RUnlock()
 
-	// Find the correct segment and read the entry
-	for _, segment := range sl.segments {
-		if offset >= segment.baseOffset && offset < segment.nextOffset {
-			segment.file.Seek(offset-segment.baseOffset, os.SEEK_SET)
-			entry, err := io.ReadAll(segment.file)
-			if err != nil {
-				return nil, err
-			}
-			return entry, nil
+	// Find the correct segment
+	var segment *LogSegment
+	for _, seg := range sl.segments {
+		if offset >= seg.baseOffset && offset < seg.nextOffset {
+			segment = seg
+			break
 		}
 	}
 
-	return nil, fmt.Errorf("offset not found")
+	if segment == nil {
+		return nil, fmt.Errorf("offset %d not found", offset)
+	}
+
+	// Calculate the relative offset within the segment
+	relativeOffset := offset - segment.baseOffset
+
+	// Seek to the correct position in the file
+	_, err := segment.file.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to seek to start of file: %w", err)
+	}
+
+	// Read line by line until we reach the desired offset
+	scanner := bufio.NewScanner(segment.file)
+	for i := int64(0); i < relativeOffset; i++ {
+		if !scanner.Scan() {
+			return nil, fmt.Errorf("unexpected end of file")
+		}
+	}
+
+	// Read the entry at the desired offset
+	if !scanner.Scan() {
+		return nil, fmt.Errorf("failed to read entry at offset %d", offset)
+	}
+
+	return scanner.Bytes(), nil
 }
 
 func (sl *SegmentedLog) Close() error {
