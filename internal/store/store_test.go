@@ -10,12 +10,14 @@ import (
 )
 
 func TestKVStore(t *testing.T) {
+	//TODO use t.tempDir()
 	tempDir, err := os.MkdirTemp("", "kvstore_test")
 	require.NoError(t, err, "Failed to create temp directory")
 	defer os.RemoveAll(tempDir)
 
 	cfg := &config.Config{
 		WALDir: tempDir,
+		SSTDir: tempDir,
 	}
 
 	store, err := NewKVStore(cfg)
