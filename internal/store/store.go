@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/joobisb/vitadb/internal/config"
+	"github.com/joobisb/vitadb/internal/lsm"
 	"github.com/joobisb/vitadb/internal/wal"
 )
 
@@ -15,6 +16,7 @@ type KVStore struct {
 	mu   sync.RWMutex
 	data map[string]string
 	wal  *wal.WAL
+	lsm  *lsm.LSM
 }
 
 func NewKVStore(cfg *config.Config) (*KVStore, error) {
@@ -23,9 +25,15 @@ func NewKVStore(cfg *config.Config) (*KVStore, error) {
 		return nil, err
 	}
 
+	l, err := lsm.NewLSM(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &KVStore{
 		data: make(map[string]string),
 		wal:  w,
+		lsm:  l,
 	}, nil
 }
 
@@ -37,6 +45,11 @@ func (s *KVStore) Set(key, value string) error {
 		return err
 	}
 
+	if err := s.lsm.Set(key, value); err != nil {
+		return err
+	}
+
+	//TODO remove this once we have a proper LSM implementation
 	s.data[key] = value
 	return nil
 }
@@ -45,6 +58,10 @@ func (s *KVStore) Get(key string) (string, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	value, ok := s.data[key]
+
+	//TODO: Implement once we have LSM and SST
+	//TODO: s.lsm.Get(key)
+
 	return value, ok
 }
 
@@ -55,6 +72,9 @@ func (s *KVStore) Delete(key string) error {
 	if err := s.wal.AppendDelete(key); err != nil {
 		return err
 	}
+
+	//TODO: Implement once we have LSM and SST
+	//TODO: s.lsm.Get(key)
 
 	delete(s.data, key)
 	return nil

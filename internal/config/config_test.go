@@ -15,7 +15,7 @@ func TestLoad(t *testing.T) {
 		assert.NotNil(t, cfg)
 		assert.Equal(t, int64(104857600), cfg.MaxLogSize)
 		assert.Equal(t, cfg.DoAsyncRepair, false)
-		assert.Equal(t, "/tmp/vitadb", cfg.WALDir)
+		assert.Equal(t, "/tmp/vitadb/wal", cfg.WALDir)
 	})
 
 	t.Run("Load with env vars", func(t *testing.T) {
@@ -42,6 +42,6 @@ func TestLoad(t *testing.T) {
 		assert.NotNil(t, cfg)
 		assert.Equal(t, int64(104857600), cfg.MaxLogSize)
 		assert.False(t, cfg.DoAsyncRepair)
-		assert.Equal(t, "/tmp/vitadb", cfg.WALDir)
+		assert.Equal(t, "/tmp/vitadb/wal", cfg.WALDir)
 	})
 }

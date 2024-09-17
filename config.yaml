@@ -1,4 +1,5 @@
 max_log_size: 104857600  # 100 MB
 do_async_repair: false
-wal_dir: "/tmp/vitadb"
+wal_dir: "/tmp/vitadb/wal"
 use_segmented_logs: true
+memtable_size: 4194304 # 4MB, after which we flush to sst
